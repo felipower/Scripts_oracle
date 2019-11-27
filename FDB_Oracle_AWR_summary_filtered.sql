@@ -1,6 +1,13 @@
 /*
  * @autor: Felipe Donoso Batias, felipe@felipedonoso.cl felipe.donoso@oracle.com
  * @fecha: 2019-10-29
+ * 
+ * Some additional examples:
+ * @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Time Model - % of D%"
+ * @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Top Timed Foregro%"  
+ * @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "SQL ordered by CPU%" 
+ * @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "SQL ordered by%"     
+ * 
  */
  
  PROMPT 
@@ -15,14 +22,10 @@
  PROMPT | @xxxxxx.sql  yyyymmdd_hh24mi  yyyymmdd_hh24mi  "%seccion%"                         |
  PROMPT |                                                                                    |
  PROMPT | Example :                                                                          |
- PROMPT | @FDB_awr_resumen_filtrado 20191120_1000 20191122_1000 "Top Timed Foreground Events"|
- PROMPT | @FDB_awr_resumen_filtrado 20191028_1100 20191101_1500 "Database Summary"           |
- PROMPT | @FDB_awr_resumen_filtrado 20191028_1100 20191101_1500 "Cache Sizes"                |
- PROMPT | @FDB_awr_resumen_filtrado 20191028_1100 20191101_1500 "Time Model"                 |
- PROMPT | @FDB_awr_resumen_filtrado 20191028_1100 20191101_1500 "Time Model - % of DB time"  |
- PROMPT | @FDB_awr_resumen_filtrado 20191028_1100 20191101_1500 "Top Timed Foreground Eve%"  |
- PROMPT | @FDB_awr_resumen_filtrado 20191028_1100 20191101_1500 "SQL ordered by CPU%"        |
- PROMPT | @FDB_awr_resumen_filtrado 20191028_1100 20191101_1500 "SQL ordered by%"            |
+ PROMPT | @FDB_Oracle_AWR_summary_filtered 20191120_1000 20191122_1000 "Top Timed Foregroun%"|
+ PROMPT | @FDB_Oracle_AWR_summary_filtered 20191120_1000 20191122_1000 "Database Summary"    |
+ PROMPT | @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Cache Sizes"         |
+ PROMPT | @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Time Model%"         |
  PROMPT +------------------------------------------------------------------------------------+
 
  
@@ -39,6 +42,14 @@ FROM dual
 
 --ACCEPT fecha_ini_awr CHAR DEFAULT &fecha_ini PROMPT '* Ingresar fecha inicio Snap, formato [yyyymmdd_hh24mi] (default: &fecha_ini):  '
 --ACCEPT fecha_fin_awr CHAR DEFAULT &fecha_fin PROMPT '* Ingresar fecha fin Snap, formato    [yyyymmdd_hh24mi] (default: &fecha_fin):  '
+
+SET TERMOUT ON
+PROMPT .
+PROMPT * Este script utiliza DIAGNOSTICK PACK.
+PROMPT * Si NO posee licencia porfavor cancele la ejecucion de este script.
+PROMPT * De lo contrario presione enter para continuar.
+ACCEPT continuar CHAR PROMPT '' HIDE
+SET TERMOUT OFF
 
 COLUMN snap_id_ini NEW_VALUE snap_ini
 COLUMN snap_id_fin NEW_VALUE snap_fin
