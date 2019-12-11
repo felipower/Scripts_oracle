@@ -3,10 +3,10 @@
  * @fecha: 2019-10-29
  * 
  * Some additional examples:
- * @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Time Model - % of D%"
- * @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Top Timed Foregro%"  
- * @FDB_Oracle_AWR_summary_filtered 20191126_1100 20191127_1100 "SQL ordered by CPU%" 
- * @FDB_Oracle_AWR_summary_filtered 20191126_1100 20191127_1100 "SQL ordered by%"     
+ * @FDB_Oracle_AWR_summary_filtered "Time Model - % of D%" 20191028_1100 20191101_1500 
+ * @FDB_Oracle_AWR_summary_filtered "Top Timed Foregro%" 20191028_1100 20191101_1500  
+ * @FDB_Oracle_AWR_summary_filtered "SQL ordered by CPU%" 20191126_1100 20191127_1100
+ * @FDB_Oracle_AWR_summary_filtered "SQL ordered by%" 20191126_1100 20191127_1100      
  * 
  */
  
@@ -16,16 +16,16 @@
  PROMPT | @author: Felipe Donoso B. felipe@felipedonoso.cl felipe.donoso@oracle.com          |
  PROMPT |                                                                                    |
  PROMPT | Examples and parameters:                                                           |
- PROMPT | @xxxxxx.sql DATE_BEGIN_AWR DATE_END_AWR SECTIONS_NAME_TO_FILTER                    |
+ PROMPT | @xxxxxx.sql SECTIONS_NAME_TO_FILTER DATE_BEGIN_AWR DATE_END_AWR                    |
  PROMPT |                                                                                    |
  PROMPT | Format:                                                                            |
- PROMPT | @xxxxxx.sql  yyyymmdd_hh24mi  yyyymmdd_hh24mi  "%seccion%"                         |
+ PROMPT | @xxxxxx.sql  "%seccion%" yyyymmdd_hh24mi  yyyymmdd_hh24mi                          |
  PROMPT |                                                                                    |
  PROMPT | Example :                                                                          |
- PROMPT | @FDB_Oracle_AWR_summary_filtered 20191120_1000 20191122_1000 "Top Timed Foregroun%"|
- PROMPT | @FDB_Oracle_AWR_summary_filtered 20191120_1000 20191122_1000 "Database Summary"    |
- PROMPT | @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Cache Sizes"         |
- PROMPT | @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Time Model%"         |
+ PROMPT | @FDB_Oracle_AWR_summary_filtered "Top Timed Foregroun%" 20191120_1000 20191122_1000|
+ PROMPT | @FDB_Oracle_AWR_summary_filtered "Database Summary" 20191120_1000 20191122_1000    |
+ PROMPT | @FDB_Oracle_AWR_summary_filtered "Cache Sizes" 20191028_1100 20191101_1500         |
+ PROMPT | @FDB_Oracle_AWR_summary_filtered "Time Model%" 20191028_1100 20191101_1500         |
  PROMPT +------------------------------------------------------------------------------------+
 
  
@@ -35,8 +35,8 @@ SET LINES 600
 
 COLUMN f_ini NEW_VALUE fecha_ini
 COLUMN f_fin NEW_VALUE fecha_fin
-SELECT   NVL( trim('&&1') ,TO_CHAR(SYSDATE - 1, 'yyyymmdd_hh24mi') ) f_ini 
-        ,NVL( trim('&&2') ,TO_CHAR(SYSDATE, 'yyyymmdd_hh24mi') )    f_fin
+SELECT   NVL( trim('&&2') ,TO_CHAR(SYSDATE - 1, 'yyyymmdd_hh24mi') ) f_ini 
+        ,NVL( trim('&&3') ,TO_CHAR(SYSDATE, 'yyyymmdd_hh24mi') )    f_fin
 FROM dual
 ;
 
@@ -82,6 +82,6 @@ SELECT salida FROM (
                     )
          ORDER BY 1
     ) 
-) WHERE seccion like '&&3'
+) WHERE seccion like '&&1'
 ;
 
