@@ -210,7 +210,7 @@ set define off
 prompt <STYLE type='text/css'> 
 prompt html, body {height:100%;} 
 prompt html {display:table; width:100%;} 
-prompt body {display:table-cell; text-align:left; vertical-align:top;} 
+prompt body {display:table-cell; text-align:left; vertical-align:top;counter-reset: section;} 
 prompt             table { margin-left: 5px;  } 
 prompt         table { 
 prompt                 font-family: verdana, arial, sans-serif; /* */
@@ -249,13 +249,22 @@ prompt h1{
 prompt font-family: verdana, arial, sans-serif; /* */
 prompt color:#6E6E6E; /* */
 prompt font-size:14px; /* */
-prompt } 
-prompt h2{ 
+prompt counter-reset: subsection; /* */
+prompt } /* */
+prompt h1::before { /* */
+prompt   counter-increment: section; /* */
+prompt   content: "Section " counter(section) ": "; /* */
+prompt } /* */
+prompt h2{  /* */
 prompt font-family: verdana, arial, sans-serif; /* */
 prompt color:#6E6E6E; /* */
 prompt font-size:13px; /* */
-prompt } 
-prompt h4{ 
+prompt } /* */
+prompt h2::before { /* */
+prompt   counter-increment: subsection; /* */
+prompt   content: counter(section) "." counter(subsection) " "; /* */
+prompt } /* */
+prompt h4{  /* */
 prompt font-family: verdana, arial, sans-serif; /* */
 prompt color:#6E6E6E; /* */
 prompt font-size:12px; /* */
@@ -329,7 +338,7 @@ prompt 		details[open] summary ~ * {
 prompt 			animation-name: fadeIn;/* */
 prompt 		  animation-duration: 1.0s;/* */
 prompt 		}
-prompt </style> 
+prompt </style>  
 prompt  </head>
 
 set define on

@@ -12,7 +12,7 @@
  *			 (o en lo posible ejecutar con usuario con rol DBA)      
  *
  *			Ejemplo de ejecucion:
- *			@FDB_Oracle_sqlid_performance  7fkm8ustbzdbt
+ *			@FDB_Oracle_sqlid_performance  7fkm8ustbzdbt yyyymmdd_hh24 yyyymmdd_hh24
  *
  *			Los scripts de generacion de graficos son sacados de los ejemplos
  *
@@ -142,8 +142,20 @@ where stat_name = 'PHYSICAL_MEMORY_BYTES'
 set termout on
 set define on
 accept sqlid char default &1 prompt '* ingrese el SQL_ID a analizar (Default &1):  '
-accept fecha_ini_awr char default &f2 prompt '* Fecha INI de datos de AWR [yyyymmdd_hh24mi] (Default &2):  '
-accept fecha_fin_awr char default &f prompt '* Fecha FIN de datos de AWR [yyyymmdd_hh24mi] (Default &3):  '
+accept fecha_ini_awr char default &2 prompt '* Fecha INI de datos de AWR [yyyymmdd_hh24mi] (Default &2):  '
+accept fecha_fin_awr char default &3 prompt '* Fecha FIN de datos de AWR [yyyymmdd_hh24mi] (Default &3):  '
+
+set term off
+COLUMN snap_id_ini NEW_VALUE snap_ini
+COLUMN snap_id_fin NEW_VALUE snap_fin
+SELECT min(snap_id) snap_id_ini, max(snap_id) snap_id_fin
+FROM dba_hist_snapshot
+WHERE 
+        (begin_interval_time >= TO_DATE('&fecha_ini_awr','yyyymmdd_hh24mi') OR end_interval_time >= TO_DATE('&fecha_ini_awr','yyyymmdd_hh24mi') )
+    AND (begin_interval_time <= TO_DATE('&fecha_fin_awr','yyyymmdd_hh24mi') OR end_interval_time <= TO_DATE('&fecha_fin_awr','yyyymmdd_hh24mi') )
+;
+set term on
+
 
 -- Esto es para los espacios en blanco no modificar
 -- Es para visualizar correctamente y formateado
@@ -164,7 +176,7 @@ prompt  * que soporte HTML5:
 prompt  * &page_start
 prompt  
 set termout off
-set termout off
+--set termout off
 --exec dbms_lock.sleep( 3 );
 
 set feedback off heading off VERIFY    off
@@ -197,7 +209,7 @@ set define off
 prompt <STYLE type='text/css'> 
 prompt html, body {height:100%;} 
 prompt html {display:table; width:100%;} 
-prompt body {display:table-cell; text-align:left; vertical-align:top;} 
+prompt body {display:table-cell; text-align:left; vertical-align:top;counter-reset: section;} 
 prompt             table { margin-left: 5px;  } 
 prompt         table { 
 prompt                 font-family: verdana, arial, sans-serif; /* */
@@ -236,13 +248,22 @@ prompt h1{
 prompt font-family: verdana, arial, sans-serif; /* */
 prompt color:#6E6E6E; /* */
 prompt font-size:14px; /* */
-prompt } 
-prompt h2{ 
+prompt counter-reset: subsection; /* */
+prompt } /* */
+prompt h1::before { /* */
+prompt   counter-increment: section; /* */
+prompt   content: "Section " counter(section) ": "; /* */
+prompt } /* */
+prompt h2{  /* */
 prompt font-family: verdana, arial, sans-serif; /* */
 prompt color:#6E6E6E; /* */
 prompt font-size:13px; /* */
-prompt } 
-prompt h4{ 
+prompt } /* */
+prompt h2::before { /* */
+prompt   counter-increment: subsection; /* */
+prompt   content: counter(section) "." counter(subsection) " "; /* */
+prompt } /* */
+prompt h4{  /* */
 prompt font-family: verdana, arial, sans-serif; /* */
 prompt color:#6E6E6E; /* */
 prompt font-size:12px; /* */
@@ -348,34 +369,90 @@ prompt  <h3 id="indice"><i>Indice:</i></h3>
 
 --prompt <details>
 --prompt <summary>
+
+prompt <a    href="&page_body#20191212_1830">+[RESUMEN AWR]</a></br>
+--prompt </summary>
+	prompt ... <a    href="&page_body#20191212_1831" >Breve resumen de AWR</a></br>
+--prompt </details>
+prompt <hr>
+
 prompt <a    href="&page_body#qwquwqeuqweu172ygfbasksu17y2hajdajsda7127">+[RESUMEN QUERY &sqlid]</a></br>
 --prompt </summary>
-	prompt ... <a    href="&page_body#832jfnc10385mbvsspai3_183hfnshdy2nben"  >... Texto de la consulta</a></br>
-    prompt ... <a    href="&page_body#1hHNgays761ghdTTqgqPPoajmsCch16371612"  >... Resumen de rendimiento de cada plan de ejecucion</a></br>
-	prompt ... <a    href="&page_body#17123uqhaduyqhuqwdyy71274hfbmnauq712yhd">... Resumen general (por hora)</a></br>
-	prompt ... <a    href="&page_body#3736ryqhfnbpoismvbj8iaj10284hfhwue_3j2" >... Resumen general (por dias)</a></br>
-	prompt ... <a    href="&page_body#18duajMNhashdj__oaisnu1u3f8djhachayPia" >... dba_sql_plan_baselines</a></br>
+	prompt ... <a    href="&page_body#832jfnc10385mbvsspai3_183hfnshdy2nben"  >Texto de la consulta</a></br>
+    prompt ... <a    href="&page_body#1hHNgays761ghdTTqgqPPoajmsCch16371612"  >Resumen de Rendimiento x Plan</a></br>
+	prompt ... <a    href="&page_body#17123uqhaduyqhuqwdyy71274hfbmnauq712yhd">Resumen general (por hora)</a></br>
+	prompt ... <a    href="&page_body#3736ryqhfnbpoismvbj8iaj10284hfhwue_3j2" >Resumen general (por dias)</a></br>
+	prompt ... <a    href="&page_body#18duajMNhashdj__oaisnu1u3f8djhachayPia" >dba_sql_plan_baselines</a></br>
 --prompt </details>
 prompt <hr>
 
 prompt <a    href="&page_body#81238uqweujadjasdhasnqweuqwejasnczmxcmzxcjasjdnczjasd">+[PLANES DE EJECUCION]</a></br>
 --prompt </summary>
-	prompt ... <a    href="&page_body#918273haha67qhhhajd81hdhadnvls028rvhvnurtyetcvsks">... dbms_xplan.display_cursor</a></br>
-	prompt ... <a    href="&page_body#1uUhahsgBag1y3hd810Ljahsn_aksuqshanaBhabh128hsh1h">... dbms_xplan.display_cursor(all last) ultima ejecucion</a></br>
-	prompt ... <a    href="&page_body#uqwydhbvm1827rhfpamancja8173bhcgatwh17wgd"        >... dbms_xplan.display_awr</a></br>
+	prompt ... <a    href="&page_body#918273haha67qhhhajd81hdhadnvls028rvhvnurtyetcvsks">dbms_xplan.display_cursor</a></br>
+	prompt ... <a    href="&page_body#1uUhahsgBag1y3hd810Ljahsn_aksuqshanaBhabh128hsh1h">dbms_xplan.display_cursor(all last)</a></br>
+	prompt ... <a    href="&page_body#uqwydhbvm1827rhfpamancja8173bhcgatwh17wgd"        >dbms_xplan.display_awr</a></br>
 --prompt </details>
 prompt <hr>
 
 prompt <a    href="&page_body#71236123yfgcsbsc_jshd61hgdg">+[REAL-TIME SQL MONITORING (BETA)]</a></br>
 --prompt </summary>
-	prompt ... <a    href="&page_body#17dhvnvbioy84h_272hdh_17dhvnb">... DBMS_SQLTUNE.report_sql_monitor</a></br>
+	prompt ... <a    href="&page_body#17dhvnvbioy84h_272hdh_17dhvnb">DBMS_SQLTUNE.report_sql_monitor</a></br>
 --prompt </details>
 prompt <hr>
 
 
 prompt <a    href="&page_body#17dhGsgt16fkfa9_ajsnduy1heuy172a">+[VARIABLES BIND]</a></br>
 --prompt </summary>
-	prompt ... <a    href="&page_body#1ncjahmfpP_skJKhshG162_sjcfbvgBgst">... Bind utilizados </a></br>
+	prompt ... <a    href="&page_body#1ncjahmfpP_skJKhshG162_sjcfbvgBgst">Bind utilizados </a></br>
+--prompt </details>
+prompt <hr>
+
+
+
+
+prompt <a    href="&page_body#20191212_1820">+[INFO TABLAS, ETC.]</a></br>
+--prompt </summary>
+	prompt ... <a    href="&page_body#17dhasgyq7dy_91jen_7dhcbvoausna">dba_objects</a></br>
+	prompt ... <a    href="&page_body#81hdhah_sudbvnue73_id92udjsjsnd">dba_tables</a></br>
+	prompt ... <a    href="&page_body#9vny26_ducnsgs62_18hs_jfnuhhdu1">dba_indexes</a></br>
+	prompt ... <a    href="&page_body#18fjvn_kvnahspqoeur_qunmajd162d">dba_tab_partitions</a></br>
+	prompt ... <a    href="&page_body#nvnajdu481y_ua__iasnau172_un1u2">dba_ind_partitions</a></br>
+	prompt ... <a    href="&page_body#yashgBGbasgs6gwtdgatwgdy12gdbGg">dba_triggers</a></br>
+	prompt ... <a    href="&page_body#182jdHyahshGGGfstagst2dasjsdOOj">dba_constraints</a></br>
+	prompt ... <a    href="&page_body#ajashd61hBBBsfsvTqrwasfasf1273V">dba_synonyms</a></br>
+	prompt ... <a    href="&page_body#hdhBgatq_jsuq_2736_fhGdtg_jasqu">dba_dependencies</a></br>
+	prompt ... <a    href="&page_body#1udjahsyBhagsyqh26dgFcposHhqsha">dba_tab_privs</a></br>
+	prompt ... <a    href="&page_body#20191212_1214">dba_role_privs</a></br>
+	prompt ... <a    href="&page_body#18wdyHgaysgqy27dgPoajsnbbasbabs">dba_tab_comments</a></br>
+	prompt ... <a    href="&page_body#jdhahYgagsy162gdhahJhahsn_kajsi">dba_tab_columns</a></br>
+	prompt ... <a    href="&page_body#1ydhGatsgcblaisjJsjauhdy6172dha">dba_tab_modifications</a></br>
+	prompt ... <a    href="&page_body#udHhsydhUoqdpamNhasnahs12dhaHha">dba_tab_statistics</a></br>
+	prompt ... <a    href="&page_body#82M_kajsjasu_ajssjufjhUyqwh_qhw">dba_ind_statistics</a></br>
+	prompt ... <a    href="&page_body#17HgsgBcUqodoeuH12945827273182J">dba_tab_col_statistics</a></br>
+	prompt ... <a    href="&page_body#y16dt1627392348Ghanhshayh2b1723">dba_tab_stat_prefs</a></br>
+	prompt ... <a    href="&page_body#81827BBhashyqie__kasjj817237172">dba_tab_stats_history</a></br>
+	prompt ... <a    href="&page_body#81737Gtqgdy173gdHhgas__jasjsh1u">dba_tab_histograms</a></br>
+	prompt ... <a    href="&page_body#judha7172y36dtdgGfas__jasuqu9fd">dbms_stats.get_prefs</a></br>
+--prompt </details>
+prompt <hr>
+
+
+prompt <a    href="&page_body#18237hahsgTgatsgKiaushGgats152">+[TAMANOS TABLAS, ETC.]</a></br>
+--prompt </summary>
+	prompt ... <a    href="&page_body#172hdh_akjs81734hdgah_ajsh1h212">Tamano tabla</a></br>
+	prompt ... <a    href="&page_body#83udha_nvnbvhgsgabGtsfsrqytPjwq">Tamano indices</a></br>
+	prompt ... <a    href="&page_body#182jfhYgstag152ggadtaPiahsnfiOi">Tamano particiones</a></br>
+--prompt </details>
+prompt <hr>
+
+prompt <a    href="&page_body#182h_sjfbbahtqYtqreThjhsbag12lkasjs_218">+[SCRIPTS (DBMS_METADATA.GET_DDL)]</a></br>
+--prompt </summary>
+	prompt ... <a    href="&page_body#kfj_kfjjJuhsgGfsyt_17dhsgat">Script de la tabla</a></br>
+	prompt ... <a    href="&page_body#20191216_1700">Script de VM</a></br>
+	prompt ... <a    href="&page_body#18dhJhahUhasTgsjhMnVcxvC125">Script de indices (normales y particionados)</a></br>
+	prompt ... <a    href="&page_body#udHuqytEqwQasDeqdsrer1423da">Script de triggers</a></br>
+	prompt ... <a    href="&page_body#18djdhahsJuahsy16gdFfsfFsfy">Script de constraints</a></br>
+	prompt ... <a    href="&page_body#ushYgsgdtVmKp183___jashhquw">Script de objetos relacionados (dba_dependencies)</a></br>
 --prompt </details>
 prompt <hr>
 
@@ -441,9 +518,109 @@ prompt />
 
 set markup html on
 
+
+
+
+set pages 20
+set markup html off
+prompt <h1 id="20191212_1830">
+set define on
+set termout on
+prompt _________________________________________________________
+set termout off
+prompt <br>
+set termout on
+prompt RESUMEN DE AWR
+set termout off
+set define off
+prompt </h1>
+set markup html on
+
+set markup html off
+prompt <h2 id="20191212_1831">
+set define on
+set termout on
+prompt * Breve resumen de AWR para fechas: &fecha_ini_awr hasta &fecha_fin_awr
+set termout off
+set define off
+prompt </h2>
+set markup html off
+set heading off
+prompt <p style=font-family:courier;color:#3463D0>
+prompt <pre>
+/*
+ * El siguiente script es parte del archivo de resumen awr filtrado
+ * No modificar sin permiso del autor:
+ * https://github.com/felipower/scripts_oracle/blob/master/FDB_Oracle_AWR_summary_filtered.sql
+ *
+ * @autor: Felipe Donoso Batias, felipe@felipedonoso.cl felipe.donoso@oracle.com
+ * @fecha: 2019-10-29
+ * 
+ * Some additional examples:
+ * @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Time Model - % of D%"
+ * @FDB_Oracle_AWR_summary_filtered 20191028_1100 20191101_1500 "Top Timed Foregro%"  
+ * @FDB_Oracle_AWR_summary_filtered 20191126_1100 20191127_1100 "SQL ordered by CPU%" 
+ * @FDB_Oracle_AWR_summary_filtered 20191126_1100 20191127_1100 "SQL ordered by%"     
+ * 
+ */
+SET DEFINE ON
+SELECT 
+--seccion,
+--replace(replace(replace(salida,' ','&espacio_en_blanco'),chr(10),'</br>'),',',',</br>')||'</br>' FROM (
+ salida  FROM (
+    SELECT
+         LAST_VALUE(seccion IGNORE NULLS) OVER (ORDER BY linea) seccion
+        ,salida
+    FROM(
+        SELECT  ROWNUM linea
+            ,CASE
+                WHEN ROWNUM = 1 THEN TRIM(output)
+                WHEN TRIM(output) = 'Database Summary' THEN TRIM(output)
+                WHEN TRIM(output) = 'Cache Sizes' THEN TRIM(output)
+                WHEN output like ('%DB/Inst%') THEN TRIM(REGEXP_REPLACE(output,' *DB/Inst.*$'))
+                ELSE NULL
+             END seccion
+            ,output salida
+                    FROM TABLE(
+                            DBMS_WORKLOAD_REPOSITORY.AWR_GLOBAL_REPORT_TEXT(l_dbid=>(SELECT dbid FROM v$database),l_inst_num=>'',l_bid=>&snap_ini,l_eid=>&snap_fin,l_options=>1+4+8)
+                    )
+         ORDER BY 1
+    ) 
+) WHERE seccion  IN
+    (
+    'Cache Sizes'
+    ,'Time Model'
+    ,'Time Model - % of DB time'
+    ,'Foreground Wait Classes -  % of Total DB time'
+    ,'Foreground Wait Classes'
+    ,'Foreground Wait Classes -  % of DB time'
+    ,'Top Timed Events'
+    ,'Top Timed Foreground Events'
+    ,'Foreground Wait Events (Global)'
+    )
+;
+prompt </pre>
+prompt </p>
+set markup html on
+set heading on
+
+set feedback on
+
+
+
+
+
+
+
+
+
 set markup html off
 prompt <h1 id="qwquwqeuqweu172ygfbasksu17y2hajdajsda7127">
 set define on
+set termout on
+prompt _________________________________________________________
+set termout off
+prompt <br>
 set termout on
 prompt RENDIMIENTO QUERY SQL_ID: &sqlid
 set termout off
@@ -1030,7 +1207,9 @@ prompt <h1 id="17dhGsgt16fkfa9_ajsnduy1heuy172a">
 set define on
 set termout on
 prompt _________________________________________________________
+set termout off
 prompt <br>
+set termout on
 prompt VARIABLES BIND PARA SQL_ID: &sqlid
 set termout off
 set define off
@@ -1076,6 +1255,1018 @@ order by 1, sql1.instance_number,sql1.position
 ;
 
 set feedback on
+
+
+set markup html off
+prompt <h1 id="20191212_1820">
+set define on
+set termout on
+prompt _________________________________________________________
+set termout off
+prompt <br>
+set termout on
+prompt INFORMACION DE TABLAS QUE COMPONEN LOS PLANES
+set termout off
+set define off
+prompt </h1>
+set markup html on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="17dhasgyq7dy_91jen_7dhcbvoausna">
+set define on
+set termout on
+prompt * Objetos de la tabla como indices, particiones, etc.. (DBA_OBJECTS)
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_OBJECTS
+where (owner,OBJECT_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+union all
+select * from DBA_OBJECTS
+where (owner,object_name) in
+    (
+        select owner,index_name from dba_indexes
+        where (table_owner,table_name) IN 
+        (
+			select distinct object_owner,object_name
+			FROM  DBA_HIST_SQL_PLAN sql1
+			where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+			  and  sql1.sql_id='&sqlid'
+		)
+    )
+;
+
+
+
+
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="81hdhah_sudbvnue73_id92udjsjsnd">
+set define on
+set termout on
+prompt * Informacion de tablas (DBA_TABLES) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_TABLES
+where 
+(owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+order by owner,table_name
+;
+set feedback on
+
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="9vny26_ducnsgs62_18hs_jfnuhhdu1">
+set define on
+set termout on
+prompt * Indices  (DBA_INDEXES) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_INDEXES
+where 
+(table_owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+order by owner,table_name,index_name
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="18fjvn_kvnahspqoeur_qunmajd162d">
+set define on
+set termout on
+prompt * Particiones  (DBA_TAB_PARTITIONS) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_TAB_PARTITIONS
+where 
+(table_owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+order by table_owner,table_name,partition_name
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="nvnajdu481y_ua__iasnau172_un1u2">
+set define on
+set termout on
+prompt * Indices particionados (DBA_IND_PARTITIONS)
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_IND_PARTITIONS
+where (index_owner,index_name) in
+    (
+        select owner,index_name from dba_indexes
+        where 
+        (table_owner,table_name) IN
+		(
+			select distinct object_owner,object_name
+			FROM  DBA_HIST_SQL_PLAN sql1
+			where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+			  and  sql1.sql_id='&sqlid'
+		)
+    )
+order by index_owner,index_name,partition_name
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="yashgBGbasgs6gwtdgatwgdy12gdbGg">
+set define on
+set termout on
+prompt * Triggers (DBA_TRIGGERS) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_TRIGGERS
+where (table_owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+order by owner, table_name,trigger_name
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="182jdHyahshGGGfstagst2dasjsdOOj">
+set define on
+set termout on
+prompt * Constraints  (DBA_CONSTRAINTS) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_CONSTRAINTS
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+order by owner, table_name,constraint_name
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="ajashd61hBBBsfsvTqrwasfasf1273V">
+set define on
+set termout on
+prompt * Sinonimos (DBA_SYNONYMS) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_SYNONYMS
+where (table_owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+order by table_owner, table_name
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="hdhBgatq_jsuq_2736_fhGdtg_jasqu">
+set define on
+set termout on
+prompt * Referencias a las tablas (dba_dependencies) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_dependencies
+where (referenced_owner,referenced_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+set feedback on
+
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="1udjahsyBhagsyqh26dgFcposHhqsha">
+set define on
+set termout on
+prompt * Privilegios sobre las tablas etc.. (dba_tab_privs) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_tab_privs
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+order by 1,2
+;
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="20191212_1214">
+set define on
+set termout on
+prompt * Usuarios con roles asignados (dba_role_privs) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_role_privs
+where granted_role in (
+select grantee from dba_tab_privs
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+)
+;
+
+
+
+set markup html off
+--set term off
+--prompt <br>
+prompt <h2 id="18wdyHgaysgqy27dgPoajsnbbasbabs">
+set define on
+set termout on
+prompt * Comentarios sobre las tablas (dba_tab_comments) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_TAB_COMMENTS
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="jdhahYgagsy162gdhahJhahsn_kajsi">
+set define on
+set termout on
+prompt * Columnas implicadas en la tablas etc.. (dba_tab_columns) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_tab_columns
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+set feedback on
+
+set markup html off
+prompt <br>
+prompt <h2 id="1ydhGatsgcblaisjJsjauhdy6172dha">
+set define on
+set termout on
+prompt * Modificaciones realizadas y % de cambios sobre tablas,etc. (dba_tab_modifications) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from DBA_TAB_MODIFICATIONS
+where (table_owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+SELECT t.owner,t.table_name, m.partition_name, m.subpartition_name, t.monitoring,m.timestamp, m.inserts, m.updates, m.deletes,(m.inserts + m.updates + m.deletes) nb_modif, t.num_rows,
+round(((m.inserts + m.updates + m.deletes)*100)/greatest(t.num_rows,1),2) percent_modif, t.last_analyzed
+FROM dba_tab_modifications m, dba_tables t
+WHERE t.table_name=m.table_name (+)
+AND (t.owner,t.table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+AND t.num_rows > 0
+ORDER BY t.last_analyzed DESC
+;
+set feedback on
+
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="udHhsydhUoqdpamNhasnahs12dhaHha">
+set define on
+set termout on
+prompt * Estadisticas de tablas involucradas (dba_tab_statistics) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_tab_statistics
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="82M_kajsjasu_ajssjufjhUyqwh_qhw">
+set define on
+set termout on
+prompt * Estadisticas de indices involucrados (dba_ind_statistics) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_ind_statistics
+where (table_owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="17HgsgBcUqodoeuH12945827273182J">
+set define on
+set termout on
+prompt * Estadisticas de columnas involucradas (dba_tab_col_statistics) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_tab_col_statistics
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+set feedback on
+
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="y16dt1627392348Ghanhshayh2b1723">
+set define on
+set termout on
+prompt * Ultimas opciones usadas en calculos de estadisticas  (dba_tab_stat_prefs) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_tab_stat_prefs
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+set feedback on
+
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="81827BBhashyqie__kasjj817237172">
+set define on
+set termout on
+prompt * Ultimas fechas de estadisticas para los objetos (dba_tab_stats_history) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_tab_stats_history
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="81737Gtqgdy173gdHhgas__jasjsh1u">
+set define on
+set termout on
+prompt * Histogramas de columnas implicadas (dba_tab_histograms) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select * from dba_tab_histograms
+where (owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+;
+set feedback on
+
+
+set markup html off
+set term off
+prompt <br>
+prompt <h2 id="judha7172y36dtdgGfas__jasuqu9fd">
+set define on
+set termout on
+prompt * Opciones y configuraciones de las tablas,etc.. (dbms_stats.get_prefs) 
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select   dbms_stats.get_prefs('AUTOSTATS_TARGET', object_owner, object_name) AUTOSTATS_TARGET 
+         ,dbms_stats.get_prefs('CASCADE', object_owner, object_name) CASCADE 
+         ,dbms_stats.get_prefs('CONCURRENT', object_owner, object_name) CONCURRENT 
+         ,dbms_stats.get_prefs('DEGREE', object_owner, object_name) DEGREE
+         ,dbms_stats.get_prefs('ESTIMATE_PERCENT', object_owner, object_name) ESTIMATE_PERCENT
+         ,dbms_stats.get_prefs('METHOD_OPT', object_owner, object_name) METHOD_OPT 
+         ,dbms_stats.get_prefs('NO_INVALIDATE', object_owner, object_name) NO_INVALIDATE 
+         ,dbms_stats.get_prefs('GRANULARITY', object_owner, object_name) GRANULARITY
+         ,dbms_stats.get_prefs('PUBLISH', object_owner, object_name) PUBLISH 
+         ,dbms_stats.get_prefs('INCREMENTAL', object_owner, object_name) INCREMENTAL 
+         ,dbms_stats.get_prefs('STALE_PERCENT', object_owner, object_name) STALE_PERCENT
+         ,dbms_stats.get_prefs('TABLE_CACHED_BLOCKS', object_owner, object_name) TABLE_CACHED_BLOCKS
+		from
+        (select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+		 --order by object_type desc
+		 )
+         -- Estas variables son para 12c
+         --,dbms_stats.get_prefs('INCREMENTAL_STALENESS', '&owner', '&tabla') INCREMENTAL_STALENESS
+         --,dbms_stats.get_prefs('INCREMENTAL_LEVEL', '&owner', '&tabla') INCREMENTAL_LEVEL
+         --,dbms_stats.get_prefs('GLOBAL_TEMP_TABLE_STATS', '&owner', '&tabla') GLOBAL_TEMP_TABLE_STATS
+         --,dbms_stats.get_prefs('OPTIONS', '&owner', '&tabla') OPTIONS 
+;
+
+
+set define on
+set termout off
+prompt Estas son las configuraciones GLOBALES de la base de datos
+set termout off
+set define off
+
+select    dbms_stats.get_prefs('AUTOSTATS_TARGET') AUTOSTATS_TARGET 
+         ,dbms_stats.get_prefs('CASCADE') CASCADE 
+         ,dbms_stats.get_prefs('CONCURRENT') CONCURRENT 
+         ,dbms_stats.get_prefs('DEGREE') DEGREE
+         ,dbms_stats.get_prefs('ESTIMATE_PERCENT') ESTIMATE_PERCENT
+         ,dbms_stats.get_prefs('METHOD_OPT') METHOD_OPT 
+         ,dbms_stats.get_prefs('NO_INVALIDATE') NO_INVALIDATE 
+         ,dbms_stats.get_prefs('GRANULARITY') GRANULARITY
+         ,dbms_stats.get_prefs('PUBLISH') PUBLISH 
+         ,dbms_stats.get_prefs('INCREMENTAL') INCREMENTAL 
+         ,dbms_stats.get_prefs('STALE_PERCENT') STALE_PERCENT
+         ,dbms_stats.get_prefs('TABLE_CACHED_BLOCKS') TABLE_CACHED_BLOCKS
+         -- Estas variables son para 12c
+         --,dbms_stats.get_prefs('INCREMENTAL_STALENESS') INCREMENTAL_STALENESS
+         --,dbms_stats.get_prefs('INCREMENTAL_LEVEL') INCREMENTAL_LEVEL
+         --,dbms_stats.get_prefs('GLOBAL_TEMP_TABLE_STATS') GLOBAL_TEMP_TABLE_STATS
+         --,dbms_stats.get_prefs('OPTIONS') OPTIONS 
+from dual;
+
+set feedback on
+
+
+
+
+set markup html off
+prompt <h1 id="18237hahsgTgatsgKiaushGgats152">
+set define on
+set termout on
+prompt _________________________________________________________
+set termout off
+prompt <br>
+set termout on
+prompt TAMANO TABLA, INDICES Y PARTICIONES  
+set termout off
+set define off
+prompt </h1>
+set markup html on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="172hdh_akjs81734hdgah_ajsh1h212">
+set define on
+set termout on
+prompt * Tamano tabla
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select owner,segment_name table_name,segment_type , round(sum(bytes)/1024/1024,2) MB
+from dba_segments
+where (owner,segment_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+group by owner,segment_name,segment_type
+;
+set feedback on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="83udha_nvnbvhgsgabGtsfsrqytPjwq">
+set define on
+set termout on
+prompt * Tamano Indices
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select owner,segment_name index_name,segment_type,partition_name , round(sum(bytes)/1024/1024,2) MB
+from dba_segments
+where (owner,segment_name) in 
+(
+    select owner,index_name from dba_indexes
+    where (table_owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+)
+group by owner,segment_name,segment_type,partition_name
+order by owner,segment_name,partition_name
+;
+set feedback on
+
+set markup html off
+prompt <br>
+prompt <h2 id="182jfhYgstag152ggadtaPiahsnfiOi">
+set define on
+set termout on
+prompt * Tamano Particiones
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+select owner,segment_name table_name,partition_name,segment_type , round(sum(bytes)/1024/1024,2) MB
+from dba_segments
+where (owner,segment_name,partition_name) in 
+(
+    select table_owner,table_name,partition_name from dba_tab_partitions
+    where (table_owner,table_name) IN
+	(
+		select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' OR sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+	)
+)
+group by owner,segment_name,partition_name,segment_type
+order by owner,segment_name,partition_name
+;
+set feedback on
+
+
+
+
+
+
+set markup html off
+prompt <h1 id="182h_sjfbbahtqYtqreThjhsbag12lkasjs_218">
+set define on
+set termout on
+prompt _________________________________________________________
+set termout off
+prompt <br>
+set termout on
+prompt SCRIPTS RELACIONADO A TABLAS  
+set termout off
+set define off
+prompt </h1>
+set markup html on
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="kfj_kfjjJuhsgGfsyt_17dhsgat">
+set define on
+set termout on
+prompt * Script tabla (DBMS_METADATA.get_ddl)
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+set heading off termout off
+set markup html off
+set define on
+--col script_source format a120
+prompt <p style=font-family:courier;color:#3463D0>
+prompt <pre>
+
+set feedback off
+SET SERVEROUTPUT ON SIZE UNLIMITED
+EXECUTE DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'PRETTY',false);
+execute DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'STORAGE',FALSE);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'SEGMENT_ATTRIBUTES',TRUE);
+set long 2000000 longchunksize 2000000 pagesize 0 linesize 1000 feedback off verify off trimspool on
+--select replace(DBMS_METADATA.get_ddl('TABLE','&tabla','&owner'),', ',', </br>') script_source from dual; 
+select DBMS_METADATA.get_ddl('TABLE',object_name,object_owner) script_source from 
+        (select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' or sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+		  --order by object_type desc
+		 )
+; 
+
+prompt </pre>
+prompt </p>
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="20191216_1700">
+set define on
+set termout on
+prompt * Script vista materializada (DBMS_METADATA.get_ddl)
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+set heading off termout off
+set markup html off
+set define on
+--col script_source format a120
+prompt <p style=font-family:courier;color:#3463D0>
+prompt <pre>
+
+set feedback off
+SET SERVEROUTPUT ON SIZE UNLIMITED
+EXECUTE DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'PRETTY',false);
+execute DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'STORAGE',FALSE);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'SEGMENT_ATTRIBUTES',TRUE);
+set long 2000000 longchunksize 2000000 pagesize 0 linesize 1000 feedback off verify off trimspool on
+--select replace(DBMS_METADATA.get_ddl('TABLE','&tabla','&owner'),', ',', </br>') script_source from dual; 
+select DBMS_METADATA.get_ddl('MATERIALIZED_VIEW',object_name,object_owner) script_source from 
+        (select distinct object_owner,object_name
+		FROM  DBA_HIST_SQL_PLAN sql1
+		where (sql1.object_type like '%TABLE%' or sql1.object_type like '%MAT_VIEW%')
+		  and  sql1.sql_id='&sqlid'
+		  --order by object_type desc
+		 )
+; 
+
+prompt </pre>
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="18dhJhahUhasTgsjhMnVcxvC125">
+set define on
+set termout on
+prompt * Scripts indices y particionados (DBMS_METADATA.get_ddl)
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+set heading off termout off
+set markup html off
+set define on
+--col script_source format a120
+prompt <p style=font-family:courier;color:#3463D0>
+prompt <pre>
+
+set feedback off
+SET SERVEROUTPUT ON SIZE UNLIMITED
+EXECUTE DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'PRETTY',false);
+execute DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'STORAGE',FALSE);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'SEGMENT_ATTRIBUTES',TRUE);
+set long 2000000 longchunksize 2000000 pagesize 0 linesize 1000 feedback off verify off trimspool on
+--select replace(replace(DBMS_METADATA.get_ddl('INDEX',INDEX_NAME,OWNER),' ','&espacio_en_blanco'),chr(10),'</br>')||'</br>' script_source from dba_indexes
+select DBMS_METADATA.get_ddl('INDEX',INDEX_NAME,OWNER) script_source from dba_indexes
+where (table_owner,table_name) in 
+		(select distinct object_owner,object_name
+				FROM  DBA_HIST_SQL_PLAN sql1
+				where (sql1.object_type like '%TABLE%' or sql1.object_type like '%MAT_VIEW%')
+				  and  sql1.sql_id='&sqlid'
+				  --order by object_type desc
+		 )
+order by index_name
+; 
+prompt </pre>
+prompt </p>
+
+
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="udHuqytEqwQasDeqdsrer1423da">
+set define on
+set termout on
+prompt * Script de triggers (DBMS_METADATA.get_ddl)
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+set heading off termout off
+set markup html off
+set define on
+--col script_source format a120
+prompt <p style=font-family:courier;color:#3463D0>
+prompt <pre>
+set feedback off
+SET SERVEROUTPUT ON SIZE UNLIMITED
+EXECUTE DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'PRETTY',false);
+execute DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'STORAGE',FALSE);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'SEGMENT_ATTRIBUTES',TRUE);
+set long 2000000 longchunksize 2000000 pagesize 0 linesize 1000 feedback off verify off trimspool on
+--select replace(replace(DBMS_METADATA.get_ddl('TRIGGER',TRIGGER_NAME,OWNER),' ','&espacio_en_blanco'),chr(10),'</br>')||'</br></br>' script_source from DBA_TRIGGERS
+select DBMS_METADATA.get_ddl('TRIGGER',TRIGGER_NAME,OWNER) script_source from DBA_TRIGGERS
+where (table_owner,table_name) in 
+		(select distinct object_owner,object_name
+				FROM  DBA_HIST_SQL_PLAN sql1
+				where (sql1.object_type like '%TABLE%' or sql1.object_type like '%MAT_VIEW%')
+				  and  sql1.sql_id='&sqlid'
+				  --order by object_type desc
+		 )
+order by trigger_name
+;
+prompt </pre>
+prompt </p>
+
+set markup html off
+prompt <br>
+prompt <h2 id="18djdhahsJuahsy16gdFfsfFsfy">
+set define on
+set termout on
+prompt * Script de constraints  (DBMS_METADATA.get_ddl)
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+set heading off termout off
+set markup html off
+set define on
+--col script_source format a120
+prompt <p style=font-family:courier;color:#3463D0>
+prompt <pre>
+set feedback off
+SET SERVEROUTPUT ON SIZE UNLIMITED
+EXECUTE DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'PRETTY',false);
+execute DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'STORAGE',FALSE);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'SEGMENT_ATTRIBUTES',TRUE);
+set long 2000000 longchunksize 2000000 pagesize 0 linesize 1000 feedback off verify off trimspool on
+--select replace(replace(DBMS_METADATA.get_ddl('CONSTRAINT',CONSTRAINT_NAME,OWNER),' ','&espacio_en_blanco'),chr(10),'</br>')||'</br>' script_source from DBA_CONSTRAINTS
+select DBMS_METADATA.get_ddl('CONSTRAINT',CONSTRAINT_NAME,OWNER) script_source from DBA_CONSTRAINTS
+where (owner,table_name) in 
+		(select distinct object_owner,object_name
+				FROM  DBA_HIST_SQL_PLAN sql1
+				where (sql1.object_type like '%TABLE%' or sql1.object_type like '%MAT_VIEW%')
+				  and  sql1.sql_id='&sqlid'
+				  --order by object_type desc
+		 )
+order by CONSTRAINT_NAME
+;
+prompt </pre>
+prompt </p>
+
+
+set markup html off
+prompt <br>
+prompt <h2 id="ushYgsgdtVmKp183___jashhquw">
+set define on
+set termout on
+prompt * Script objetos relacionados (packages, etc.) segun dba_dependencies (DBMS_METADATA.get_ddl)
+set termout off
+set define off
+prompt </h2>
+set markup html on
+set heading on
+set define on
+set feedback on
+set heading off termout off
+set markup html off
+set define on
+--col script_source format a120
+prompt <p style=font-family:courier;color:#3463D0>
+prompt <pre>
+set feedback off
+SET SERVEROUTPUT ON SIZE UNLIMITED 
+EXECUTE DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'PRETTY',false);
+execute DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'STORAGE',FALSE);
+exec DBMS_METADATA.SET_TRANSFORM_PARAM (DBMS_METADATA.SESSION_TRANSFORM, 'SEGMENT_ATTRIBUTES',TRUE);
+set long 2000000 longchunksize 2000000 pagesize 0 linesize 5000 feedback off verify off trimspool on
+--select replace(replace(DBMS_METADATA.get_ddl(replace(TYPE,' ','_'),NAME,OWNER),chr(32),'&espacio_en_blanco'),chr(10),'</br>')||'</br></br></br></br>' script_source from dba_dependencies
+select DBMS_METADATA.get_ddl(replace(TYPE,' ','_'),NAME,OWNER) script_source from dba_dependencies
+where (referenced_owner,referenced_name) in 
+		(select distinct object_owner,object_name
+				FROM  DBA_HIST_SQL_PLAN sql1
+				where (sql1.object_type like '%TABLE%' or sql1.object_type like '%MAT_VIEW%')
+				  and  sql1.sql_id='&sqlid'
+				  --order by object_type desc
+		 )
+order by owner,name,TYPE
+;
+prompt </pre>
+prompt </p>
+
 
 
 set markup html off
