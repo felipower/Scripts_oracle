@@ -1012,6 +1012,7 @@ prompt <br>El "Predicate Filtering" en ambientes Exadadatas  (el retorno de las 
 prompt <br>El "Storage Index" es una estructura de memoria que vive a nivel de celda exadata y mantiene los valores maximos y minimos por cada 1 MB de unidad de disco por hasta 8 columnas en una tabla (Es un verdadero mapa que permite eliminar regiones de busqueda en disco, es un índice pero inverso en vez de ayudar a ver que datos son los necesarios, el storage index indica que datos o regiones de disco no son necesarias para nuestra consulta). Estan disenados para reducir el tiempo que permanece la celda leyendo datos desde disco fisico.
 prompt <br>
 prompt <br>Para una mejor compresion de los planes consultar libro <b><i>"Troubleshooting Oracle Performance, Christian Atonigni"</i></b> Pagina 209, descripcion de un plan de ejecucion y pagina  224 (figura 6-3) para explicar la estructura de un plan y en que orden leer el plan.
+prompt <br> En los <b>full table scan (FTS)</b> oracle pone los bloques al extremo de la LRU y no al extremo de la MRU most recently used. Oracle se asegura que una vez termine el full table scan the blocks sean sacados lo mas rapidamente del buffer cache.😅
 prompt </p>
 
 set markup html off

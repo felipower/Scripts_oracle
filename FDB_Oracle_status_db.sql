@@ -1080,7 +1080,7 @@ set termout off
 prompt </h2>
 prompt <p>
 prompt Atencion con los siguientes parametros ocultos (aun asi la tabla trae la columna x$ksppi.ksppdesc de descripcion) :
-prompt <br> * _small_table_threshold:  Defines the number of blocks to consider a table as being small. (Recordar el limite de 2% del tamano de buffer cache para intentar mantener esta en memoria, por default)
+prompt <br> * _small_table_threshold:  Defines the number of blocks to consider a table as being small. (Recordar el limite de 2% del tamano de buffer cache para intentar mantener esta en memoria, por default). Ojo que poner un valor bajo para este parametro animara a que oracle haga direct path read
 prompt <br> * _very_large_table_threshold: (esta métrica tambien influye mucho en el exadata relacionado al punto anterior).Revisar esta nota al respecto: direct path read Reference Note (Doc ID 50415.1)
 prompt <br> * _kcfis_storageidx_disabled: atencion con este parametro que si esta en TRUE deshabilita el uso de storage index
 prompt <br> * _serial_direct_read: para forzar el direct path read de las consultas (Direct path reads are generally used by Oracle when reading directly into PGA memory (as opposed to into the buffer cache).
@@ -3123,7 +3123,9 @@ prompt <br>Permite establecer la prioridad para ciertos procesos background. Eje
 prompt <br> 
 prompt <br> Este parametro _use_adaptive_log_file_sync: Se recomienda ponerlo en TRUE solo si hay Log File Sync y el LGWR esta muy ocupado. En 11.2.0.3 se cambio a TRUE (metodo polling o encuestar). En modo polling es el foreground process el que pregunta si la info del redolog buffer ya ha sido escrita a archivos de redolog liberando carga de CPU y regursos al LGWR, mientras que en el modo FALSE (post/wait) es el metodo tradicional hasta antes de 11.2.0.2 en donde el LGWR es el que informa si ha la info de logbuffer ya esta totalmente escrita a los archivos de redolog.
 prompt <br>
-prompt <b> Ojo con este parametro _dlm_stats_collect en 12.2 hay un problema y ocasiona que el proceso background SCMn consuma mucha CPU innecesariamente (Bug 24590018 ). Revisar lo siguiente: 12.2 RAC DB Background process SCM0 consuming excessive CPU (Doc ID 2373451.1) y tambien revisar: https://www.felipedonoso.cl/2019/09/bug-24590018-on-exadata-scm0-on-top.html
+prompt <br> Ojo con este parametro _dlm_stats_collect en 12.2 hay un problema y ocasiona que el proceso background SCMn consuma mucha CPU innecesariamente (Bug 24590018 ). Revisar lo siguiente: 12.2 RAC DB Background process SCM0 consuming excessive CPU (Doc ID 2373451.1) y tambien revisar: https://www.felipedonoso.cl/2019/09/bug-24590018-on-exadata-scm0-on-top.html
+prompt <br>
+prompt <br> En los <b>full table scan (FTS)</b> oracle pone los bloques al extremo de la LRU y no al extremo de la MRU most recently used. Oracle se asegura que una vez termine el full table scan the blocks sean sacados lo mas rapidamente del buffer cache.😅
 prompt </p>
 set markup html on
 SELECT * from GV$parameter
@@ -6376,6 +6378,22 @@ set termout on
 prompt * Top obj. lecturas fisicas (total para rangos de fechas entre: &fecha_ini_awr y &fecha_fin_awr)
 set termout off
 prompt </h2>
+prompt <p> 
+prompt <br>Physical reads = physical reads cache + physical reads direct.
+prompt <br>Physical reads cache increments when an Oracle foreground process physically reads a block from an Oracle DBF file as a result of an IO subsystem call and places the block into Oracle's buffere cache. Simply put, Oracle reads a block from disk and put into the buffer cache.
+prompt <br>Physical reads direct increments when an Oracle foreground process physically reads a block from an Oracle DBF file as a result of an IO subsystem call and places the block into the foreground process's memory (i.e., its PGA or process global area). Simply put, Oracle reads a block from disk and put into the foreground process's PGA.
+prompt <br>(https://blog.orapub.com/20181204/do-direct-path-reads-count-as-logical-reads.html)
+pormpt <br> Segun el anterior link los DIRECT PATH READ incluyen los LOGICAL READS y PHYSICAL_READS
+prompt <br>
+prompt <br>
+prompt Atención con lo siguiente respecto a las <b>Optimized Read Request</b>:
+prompt <br>(<b>Source</b>: How to Interpret the "SQL ordered by Physical Reads (UnOptimized)" Section in AWR Reports (11.2 onwards) for Smart Flash Cache Database (Doc ID 1466035.1) ) 
+prompt <br><i>What are 'Optimized Read Reqs'?
+prompt <br>Optimized Read Requests are read requests that are satisfied from the Smart Flash Cache ( or the Smart Flash Cache in OracleExadata V2).
+prompt <br><b>Note:</b> that despite same name, concept and use of  'Smart Flash Cache' in Exadata V2 is different from  'Smart Flash Cache' in Database Smart Flash Cache.</i>
+prompt <br>
+prompt <br> Con respecto a las <b>Physical Reads de AWR</b> estas representan al número de bloques leidos NO a las operaciones I/O eso lo diferencian de otras métricas como Optimized Read Request que si se refieren en ese caso a Operaciones I/O.
+prompt </p>
 set markup html on
 
 -- lectura fisicas
