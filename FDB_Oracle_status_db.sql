@@ -508,10 +508,11 @@ prompt <hr>
 --prompt <br>
 prompt <details>
 prompt <summary>
-	prompt +[NETWORK]</br>
+	prompt +[NETWORK & ACLs]</br>
 prompt </summary>
 	prompt ... <a    href="&page_body#201909121200">DBA_NETWORK_ACLS</a></br>
 	prompt ... <a    href="&page_body#201909121202">DBA_HOST_ACLS</a></br>
+	prompt ... <a    href="&page_body#202004031854">DBA_NETWORK_ACL_PRIVILEGES</a></br>
 prompt </details>
 
 prompt <hr>
@@ -2456,7 +2457,7 @@ prompt *  DBA_NETWORK_ACLS
 set termout off
 prompt </h2>
 prompt <p>
-prompt Recordar que esta vista quedó obsoleta en 12.1
+prompt Recordar que esta vista quedó obsoleta en 12.1 en su lugar recomienda revisar DBA_HOST_ACLS
 prompt </p>
 set markup html on
 select * from DBA_NETWORK_ACLS
@@ -2469,10 +2470,22 @@ prompt *  DBA_HOST_ACLS
 set termout off
 prompt </h2>
 prompt <p>
-prompt Recordar que esta vista quedó obsoleta en 12.1
+prompt Recordar que esta vista comenzará a reemplazar a DBA_NETWORK_ACLS
 prompt </p>
 set markup html on
 select * from DBA_HOST_ACLS
+;
+
+set markup html off
+prompt <h2 id="202004031854">
+set termout on
+prompt *  DBA_NETWORK_ACL_PRIVILEGES
+set termout off
+prompt </h2>
+prompt <p>
+prompt </p>
+set markup html on
+select * from DBA_NETWORK_ACL_PRIVILEGES
 ;
 
 
