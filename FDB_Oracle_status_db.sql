@@ -148,14 +148,22 @@ set define on
 -- No borrar esta variable es para definir si se debe ejecutar la consulta complicada
 -- sobre el alert log de la base de datos
 set termout on
--- prompt .... Revisar log de Alerta de las instancias? [S/N]: .... 
 -- define leer_alert_log = &1
-accept leer_alert_log char default N prompt '* Revisar log de Alerta de las instancias? [S/N] (valor por default: N):  '
-accept rescatar_scripts char default N prompt '* Rescatar scripts de base de datos tablespaces/usuarios/dblinks? [S/N] (valor por default: N):  '
+
+-- Por ahora se comentaron las preguntas y 
+-- se usaran opciones por default para que el usuario
+-- no vea preguntas
+
+--accept leer_alert_log char default N prompt '* Revisar log de Alerta de las instancias? [S/N] (valor por default: N):  '
+define leer_alert_log = "N"
+--accept rescatar_scripts char default N prompt '* Rescatar scripts de base de datos tablespaces/dblinks? [S/N] (valor por default: N):  '
+define rescatar_scripts = "S"
 
 -- No borrar nunca estas dos variables
-accept fecha_ini_awr char default &f2 prompt '* Fecha INI de datos de AWR [yyyymmdd_hh24mi] (valor por default: &f2):  '
-accept fecha_fin_awr char default &f prompt '* Fecha FIN de datos de AWR [yyyymmdd_hh24mi] (valor por default: &f):  '
+--accept fecha_ini_awr char default &f2 prompt '* Fecha INI de datos de AWR [yyyymmdd_hh24mi] (valor por default: &f2):  '
+define fecha_ini_awr = &f2
+--accept fecha_fin_awr char default &f prompt '* Fecha FIN de datos de AWR [yyyymmdd_hh24mi] (valor por default: &f):  '
+define fecha_fin_awr = &f
 
 set termout off
 
@@ -175,9 +183,11 @@ prompt            * que soporte HTML5:
 prompt            * &page_start
 prompt  
 set termout off
-exec dbms_lock.sleep( 2 );
 
-set feedback off heading off VERIFY    off
+
+exec dbms_lock.sleep(1);
+
+set feedback off heading off VERIFY off
 
 
 
@@ -424,7 +434,7 @@ prompt <summary>
 prompt +[ESTADISTICAS EXTRAS Y DATOS]</br>
 prompt </summary>
 	prompt ... <a    href="&page_body#Uahsy163hfy47163dgah_Resumen_sesiones">Resumen de sesiones</a></br>
-	prompt ... <a    href="&page_body#jsduhsyqwye16238fmlos0182uensnds">Sesiones conectadas</a></br>
+	prompt ... <a    href="&page_body#jsduhsyqwye16238fmlos0182uensnds">GV$session</a></br>
 	prompt ... <a    href="&page_body#Objetosinvalidos___Hnchwter18264mshdyBvter5361">Objetos invalidos</a></br>
 	prompt ... <a    href="&page_body#1udjd7ahHHyagTT__ahsyqTrqfav123Ggasbsdgga12312">Objetos modificados</a></br>
 	prompt ... <a    href="&page_body#jashu172hdgaygasdyqgwgdaygsyw">Objetos con errores procedurales</a></br>
@@ -508,7 +518,7 @@ prompt <hr>
 --prompt <br>
 prompt <details>
 prompt <summary>
-	prompt +[NETWORK & ACLs]</br>
+	prompt +[NETWORK-ACLs]</br>
 prompt </summary>
 	prompt ... <a    href="&page_body#201909121200">DBA_NETWORK_ACLS</a></br>
 	prompt ... <a    href="&page_body#201909121202">DBA_HOST_ACLS</a></br>
@@ -3125,8 +3135,12 @@ prompt <br>
 prompt <br>Ojo con el parametro oculto en 11g _optimizer_ignore_hint y parámetro nuevo en 18c optimizer_ignore_hint.
 prompt <br>Si esta en true permitira que el optimizador ignore todos los Hints del motor.
 prompt <br>
-prompt <br>Ojo con el parametro optimizer_ignore_parallel_hint.
-prompt <br>Si esta en true permitira que el optimizador ignore todos los Hints de paraleismo.
+prompt <br>Ojo con el parametro optimizer_ignore_parallel_hint y optimizer_ignore_hints.
+prompt <br>Si esta en true permitira que el optimizador ignore todos los Hints de optimizador y los de paraleismo.
+prompt <br> Recordar esto en Autonomous database:
+prompt <br> ADW Ignores optimizer and PARALLEL hints
+prompt <br> ATP Honors optimizer and PARALLEL hints
+prompt <br> http://nocoug.org/download/2019-11/NoCOUG_201911_Panchal_Autonomous_Database.pdf
 prompt <br>
 prompt <br>Atención con este parámetro _ash_sample_all:
 prompt <br>Permitirá que ASH recolecte información tanto para las sesiones activas como las inactivas. Por defecto esta en FALSE. Revisar lo siguiente: https://blog.orapub.com/20180215/how-to-see-unseen-activity-using-ash-and-sqlnet-message-from-client.html
