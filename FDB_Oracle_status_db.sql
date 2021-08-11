@@ -399,6 +399,8 @@ prompt </summary>
 	prompt ... <a    href="&page_body#DBA_FEATURE_USAGE_STATISTICS_jashfd72645Gsdgf">Opciones habilitadas</a></br>
 	prompt ... <a    href="&page_body#hasy16e9fmhahsuhydh973rka927ehdjabmgpaj72">Daylight savings time zone</a></br>
 	prompt ... <a    href="&page_body#kasju17dhaashdhashdhasdhH__jashf8109dkMha">Db_links</a></br>
+  prompt ... <a    href="&page_body#20210128_1212">SCHEMA_VERSION_REGISTRY</a></br>
+  prompt ... <a    href="&page_body#20210203_1257">dba_profiles</a></br>
 prompt </details>
 
 
@@ -410,7 +412,10 @@ prompt +[MULTITENANT CDB PDB]</br>
 prompt </summary>
 	prompt ... <a    href="&page_body#20191010_1821">PDBs</a></br>
 	prompt ... <a    href="&page_body#20191010_1824">PDB_ALERTS</a></br>
-	prompt ... <a    href="&page_body#20191010_1825">CDB_SERVICES</a></br>
+	prompt ... <a    href="&page_body#20191010_1825">CDB_SERVICES V$services</a></br>
+  prompt ... <a    href="&page_body#20201102_2242">PDB_PLUG_IN_VIOLATIONS</a></br>
+  prompt ... <a    href="&page_body#20200217_1350">Numero procesos y sesiones por PDB</a></br>
+  
 prompt </details>
 
 
@@ -440,6 +445,7 @@ prompt </summary>
 	prompt ... <a    href="&page_body#jashu172hdgaygasdyqgwgdaygsyw">Objetos con errores procedurales</a></br>
 	prompt ... <a    href="&page_body#hahashahsashduh276263476efhdf_1838fnbavachqi">Triggers especiales (ej: onlogon)</a></br>
 	prompt ... <a    href="&page_body#idjayt16dgdghja71ydgTTgdfaqPPiadhahsadhydd1v">Indices invisibles</a></br>
+  prompt ... <a    href="&page_body#20210511_1701">Indices con un owner </a></br>
 	prompt ... <a    href="&page_body#djahUjjhdhYATQGDRQFGDHAuqhdhaytqAFAFFd918283">Tablas con skip corrupt</a></br>
 	prompt ... <a    href="&page_body#objectswithnoitdefaultuqyw61yt23twwv86">Objetos con buffer_pool</a></br>
 	prompt ... <a    href="&page_body#201902191632">Objetos con read_only</a></br>
@@ -589,7 +595,8 @@ prompt </summary>
 	prompt ... <a    href="&page_body#201902191759">Top query CELL_UNCOMPRESSED_BYTES</a></br>
 	prompt ... <a    href="&page_body#Crecimientodelabasededatos__dh50912eyds">Crecimiento BD ultimo periodo</a></br>
 	prompt ... <a    href="&page_body#Crecimientodelabasededatos__fhsyrywqteGcbsg14Tknjsu">Crecimiento BD periodo seleccionado </a></br>
-	prompt ... <a    href="&page_body#systime_model_ajsjd1832jBfjof93Hfuey67sj">SYS_TIME_MODEL analisis </a></br>
+	prompt ... <a    href="&page_body#20200713_1448">Top Objetos crecimiento</a></br>
+  prompt ... <a    href="&page_body#systime_model_ajsjd1832jBfjof93Hfuey67sj">SYS_TIME_MODEL analisis </a></br>
 	prompt ... <a    href="&page_body#Objetostopenlecturaslogicas_HvnbfhThduwj58712Pmv">Top obj. lecturas logicas</a></br>
 	prompt ... <a    href="&page_body#Objetostopenlecturasfisicas_Jvnm258PmvbaEqrwtTr2">Top obj. lecturas fisicas</a></br>
 	prompt ... <a    href="&page_body#Objetostopenescrituras_hsdHbsdhsgassdsdsw2">Top obj. escrituras fisicas</a></br>
@@ -968,6 +975,30 @@ order by 1,2
 ;
 
 
+set markup html off
+prompt <h2 id="20210128_1212">
+set termout on
+prompt * info SYSTEM.SCHEMA_VERSION_REGISTRY for installed products 
+set termout off
+prompt </h2>
+set markup html on
+select * from SYSTEM.SCHEMA_VERSION_REGISTRY
+;
+
+
+set markup html off
+prompt <h2 id="20210203_1257">
+set termout on
+prompt * info dba_profiles 
+set termout off
+prompt </h2>
+set markup html on
+select * from dba_profiles
+order by 1,2
+;
+
+
+
 
 
 set markup html off
@@ -1006,12 +1037,50 @@ select * from PDB_ALERTS
 set markup html off
 prompt <h2 id="20191010_1825">
 set termout on
-prompt * CDB_SERVICES
+prompt * CDB_SERVICES V$services
 set termout off
 prompt </h2>
 set markup html on
-select * from CDB_SERVICES 
+select * from CDB_SERVICES
 ;
+select * from V$services
+;
+
+
+set markup html off
+prompt <h2 id="20201102_2242">
+set termout on
+prompt * PDB_PLUG_IN_VIOLATIONS
+set termout off
+prompt </h2>
+set markup html on
+select * from PDB_PLUG_IN_VIOLATIONS
+;
+
+set markup html off
+prompt <h2 id="20200217_1350">
+set termout on
+prompt * Numero de sesiones y procesos por PDB
+set termout off
+prompt </h2>
+set markup html on
+select 
+    nvl((select name from V$pdbs where con_id = s.con_id),con_id) PDB
+    , (select instance_name from GV$instance where inst_id = s.inst_id) inst_id
+    , count(1) numero_sesiones 
+from GV$session s
+group by con_id,inst_id
+order by 1,2;
+
+-- procesos
+select 
+    nvl((select name from V$pdbs where con_id = s.con_id),con_id) PDB
+    , (select instance_name from GV$instance where inst_id = s.inst_id) inst_id
+    , count(1) numero_procesos 
+from GV$process s
+group by con_id,inst_id
+order by 1,2;
+
 
 
 set markup html off
@@ -1094,7 +1163,7 @@ prompt Atencion con los siguientes parametros ocultos (aun asi la tabla trae la 
 prompt <br> * _small_table_threshold:  Defines the number of blocks to consider a table as being small. (Recordar el limite de 2% del tamano de buffer cache para intentar mantener esta en memoria, por default). Ojo que poner un valor bajo para este parametro animara a que oracle haga direct path read
 prompt <br> * _very_large_table_threshold: (esta métrica tambien influye mucho en el exadata relacionado al punto anterior).Revisar esta nota al respecto: direct path read Reference Note (Doc ID 50415.1)
 prompt <br> * _kcfis_storageidx_disabled: atencion con este parametro que si esta en TRUE deshabilita el uso de storage index
-prompt <br> * _serial_direct_read: para forzar el direct path read de las consultas (Direct path reads are generally used by Oracle when reading directly into PGA memory (as opposed to into the buffer cache).
+prompt <br> * _serial_direct_read: para forzar el direct path read de las consultas (Direct path reads are generally used by Oracle when reading directly into PGA memory (as opposed to into the buffer cache). Se recomienda que siempre este en allways para los exadatas para hacer uso del smart scanning.
 prompt <br> * _ash_sample_all: Permitirá que ASH recolecte información tanto para las sesiones activas como las inactivas. Por defecto esta en FALSE. Revisar lo siguiente: https://blog.orapub.com/20180215/how-to-see-unseen-activity-using-ash-and-sqlnet-message-from-client.html
 prompt <br>* _high_priority_processes (por defecto da prioridad a LMS*) y _highest_priority_processes (este ultimo para asignar prioridad a VKTM en 12.1.0.2.0 por default ). Permite establecer la prioridad para ciertos procesos background. Ejemplo de valores: _high_priority_processes='LMS*|LGWR|PMON'. En algunos ambientes se ha observado una mejora notable en los eventos de espera log sync * al incrementar la prioridad del log writer.
 prompt <br>* _dlm_stats_collect   este parametro en 12.2 hay un problema y ocasiona que el proceso background SCMn consuma mucha CPU innecesariamente (Bug 24590018 ). Revisar lo siguiente: 12.2 RAC DB Background process SCM0 consuming excessive CPU (Doc ID 2373451.1) y tambien revisar: https://www.felipedonoso.cl/2019/09/bug-24590018-on-exadata-scm0-on-top.html
@@ -1216,11 +1285,15 @@ group by inst_id,username,machine
 order by 1, 2;
 
 set markup html off
-prompt <br>Numero de sesiones por cada instancia:
+prompt <br>Numero de sesiones 
 set markup html on
 select inst_id, count(*) total_sesiones from GV$session
 group by inst_id
 ;
+
+
+
+
 
 
 set markup html off
@@ -1336,6 +1409,23 @@ set markup html on
 select * from dba_indexes
 where visibility != 'VISIBLE'
 ;
+
+
+set heading on pages 999
+set markup html off
+prompt <h2 id="20210511_1701">
+set termout on
+prompt * Indices con un owner distinto al owner de la tabla
+set termout off
+prompt </h2>
+set markup html on
+select * from dba_indexes
+where owner != TABLE_OWNER
+;
+
+
+
+
 
 set markup html off
 prompt <h2 id="djahUjjhdhYATQGDRQFGDHAuqhdhaytqAFAFFd918283">
@@ -3190,6 +3280,8 @@ prompt </h2>
 prompt <p>
 prompt <br>CELL_OFFLOAD_PROCESSING recomendado TRUE (de lo contrario Deshabilita "Smart Scan")
 prompt <br>_KCFIS_STORAGEIDX_DISABLED recomendado FALSE ( de lo contrario Deshabilita "Storage index")
+prompt <br>_serial_direct_read: para forzar el direct path read de las consultas (Direct path reads are generally used by Oracle when reading directly into PGA memory (as opposed to into the buffer cache). Se recomienda que siempre este en ALLWAYS para los exadatas para hacer uso del smart scanning.
+prompt <br>Lo mas importante es que las consultas esten ocupando el plan de ejeución TABLE ACCESS STORAGE FULL.
 prompt </p>
 set markup html on
 SELECT * from GV$parameter
@@ -6086,6 +6178,64 @@ order by get_date desc;
 
 --------------------------------------------------------------------------
 
+set markup html off
+prompt <h2 id="20200713_1448">
+set define on
+set termout on
+prompt * Top crecimiento objetos durante los ultimos 15 dias (crecimiento mayor a 512MB)
+set termout off
+prompt </h2>
+
+with snapshot_tmp as
+(
+select /*+ materialize */ min(snap_id) snap from dba_hist_snapshot sn
+where sn.begin_interval_time > sysdate - 15 order by 1), 
+seg_stat_tmp as 
+(
+select /*+ materialize */ 
+a.obj#, round(sum(space_used_delta)/1024/1024,0) as space_growth_mb1, round(sum(space_allocated_delta)/1024/1024,0) as space_growth_lob_mb1
+from dba_hist_seg_stat a 
+where 
+snap_id >= (select snap from snapshot_tmp) 
+and a.dataobj# = (select max(y.dataobj#) from dba_hist_seg_stat y where y.obj# = a.obj#)
+group by a.obj#
+), 
+obj_tmp as 
+(
+select /*+ materialize */ 
+b.owner, 
+(case when b.subobject_name is null then b.object_name else b.subobject_name end) obj_name, 
+case when b.object_type in ('TABLE', 'TABLE PARTITION', 'TABLE SUBPARTITION') then b.object_name 
+when b.object_type in ('INDEX', 'INDEX PARTITION', 'INDEX SUBPARTITION') then (select i.table_name from dba_indexes i where i.owner = b.owner and i.index_name = b.object_name)
+when b.object_type = 'LOB' then (select l.table_name from dba_lobs l where l.owner = b.owner and l.segment_name = b.object_name)
+when b.object_type = 'LOB PARTITION' then (select max(p.table_name) from dba_lob_partitions p where p.table_owner = b.owner and p.lob_name = b.object_name)
+else b.object_name end parent_obj_name, 
+b.object_type, 
+b.object_id, 
+a.space_growth_mb1,
+space_growth_lob_mb1
+from dba_objects b, seg_stat_tmp a 
+where 
+b.object_id = a.obj# 
+)
+select * from 
+(
+select 
+owner, 
+obj_name, 
+parent_obj_name, 
+object_type,
+sum(case when object_type in ('LOB', 'LOB PARTITION') then space_growth_lob_mb1 else space_growth_mb1 end) as space_growth_mb
+from obj_tmp 
+group by 
+owner, 
+obj_name,
+parent_obj_name,
+object_type
+)
+where space_growth_mb >=512
+order by space_growth_mb desc nulls last
+;
 
 
 set markup html off
