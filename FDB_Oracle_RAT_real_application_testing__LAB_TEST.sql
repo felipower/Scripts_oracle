@@ -31,6 +31,22 @@ mkdir /u01/RAT_DIR_PDB1_20190821
 
 alter session set container=cdb$root ;
 CREATE OR REPLACE DIRECTORY RAT_DIR_PDB1_20190821 AS '/u01/RAT_DIR_PDB1_20190821';
+-- NOTE: For determine how much disk space you need for
+-- storage the capture files you have 2 alternatives:. 
+-- 1.- testing a little capture process:
+-- (https://docs.oracle.com/cd/E18283_01/server.112/e16540.pdf)
+-- Page 3-3: "To estimate the amount of disk space that is required, you can 
+-- run a test capture on your workload for a short duration 
+-- (such as a few minutes) to extrapolate how much space you will need for a full capture."
+--
+-- 2.- Using the next doc id: 
+-- Real Application Testing: Database Capture FAQ (Doc ID 1920275.1)
+-- Check the AWR metric: "Bytes received via SQL*Net from client"
+-- (for the same hour to capture)
+-- the formule is = 2 * (Bytes received via SQL*Net from client)
+-- On the AWR report , you need to go:
+-- "Instance activity stats" --> "Ordered by statistic name" ---> "Bytes received via SQL*Net from client" ---> "Total"
+-- that "total" multiply by 2 and get the estimate disk space for capture (that is aprox) 
 
 
 /*
@@ -89,7 +105,29 @@ alter user rat_test quota unlimited on users ;
 /*
  * 4.- BEGIN CAPTURE
  * we need to use a name for capture and the directory's name
+ *
+ * NOTE: Real Application Testing: Database Capture FAQ (Doc ID 1920275.1)
+ * Database Capture DOES NOT capture workload from dbms_jobs or scheduler jobs. 
+ * They are excluded from capture. The assumption is that in the 
+ * test database where the replay is done, these jobs will be already setup.
+ *
+ * 
+ * From note: Master Note for Real Application Testing Option (Doc ID 1464274.1)
+ * Workload Capture Restrictions
+ * The following types of client requests are not supported:
+ * - Direct path load of data from external files using utilities such as SQL*Loader
+ * - Non-PL/SQL based Advanced Queuing (AQ)
+ * - Flashback queries
+ * - Oracle Call Interface (OCI) based object navigations
+ * - Non SQL-based object access
+ * - Distributed transactions (any distributed transactions that are captured will be replayed as local transactions)
+ * - Oracle Streams/Advanced Replication workload is not supported prior to 11.2.
+ * - Database session migration
+ * - Database Resident Connection Pooling ( DRCP )
+ * - XA transactions
+ * - Workloads having Object Out Bind
  */
+
 alter session set container=cdb$root ;
 BEGIN
     DBMS_WORKLOAD_CAPTURE.start_capture (
@@ -103,11 +141,12 @@ END;
 /
 
 
+
 /*
  * 4.- EXECUTE SOME LOAD ON DATABASE FOR CAPTURE
  * In my example the name of capture PDB is called "PDB1"
  */
-sqlplus "rat_test/rat_test@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=lab-db12-2-ol7)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=pdb1)))" >>EOF
+sqlplus "rat_test/rat_test@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=lab-db12-2-ol7)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=pdb1)))" <<EOF
 CREATE TABLE rat_test.rat_test_table (
   num           NUMBER,
   text  VARCHAR2(100)
