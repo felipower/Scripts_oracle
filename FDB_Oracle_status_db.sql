@@ -382,6 +382,7 @@ prompt <details>
 prompt <summary>
 prompt +[INFORMACION GENERAL]</br>
 prompt </summary>
+	prompt ... <a    href="&page_body#20220321_1115">ORACLE_HOME</a></br>
 	prompt ... <a    href="&page_body#18cnvm_1827fhc_cnvhGtdG">Arquitectura hardware </a></br>
 	prompt ... <a    href="&page_body#Version_Djgyew56Terli0K">Version BD</a></br>
 	prompt ... <a    href="&page_body#ParchesPSUCPUyactualizacionesaplicados_JfgT45Rdfrt67Hdf">Parches</a></br>
@@ -397,7 +398,7 @@ prompt </summary>
 	prompt ... <a    href="&page_body#DBA_USERS_yr546Gte40nnn">Usuarios</a></br>
 	prompt ... <a    href="&page_body#DBA_PROFILES__ufy5683hjfyMMcvat13e">Profiles</a></br>
 	prompt ... <a    href="&page_body#DBA_FEATURE_USAGE_STATISTICS_jashfd72645Gsdgf">Opciones habilitadas</a></br>
-	prompt ... <a    href="&page_body#hasy16e9fmhahsuhydh973rka927ehdjabmgpaj72">Daylight savings time zone</a></br>
+	prompt ... <a    href="&page_body#hasy16e9fmhahsuhydh973rka927ehdjabmgpaj72">Daylight savings time zone (version)</a></br>
 	prompt ... <a    href="&page_body#kasju17dhaashdhashdhasdhH__jashf8109dkMha">Db_links</a></br>
   prompt ... <a    href="&page_body#20210128_1212">SCHEMA_VERSION_REGISTRY</a></br>
   prompt ... <a    href="&page_body#20210203_1257">dba_profiles</a></br>
@@ -756,6 +757,22 @@ set termout off
 prompt </h1>
 set markup html on
 
+
+
+
+
+set markup html off
+prompt <h2 id="20220321_1115">
+set termout on
+prompt * ORACLE_HOME
+set termout off
+prompt </h2>
+set markup html on
+set serveroutput on size unlimited
+var oracle_home clob;
+exec dbms_system.get_env('ORACLE_HOME', :oracle_home);
+
+
 set markup html off
 prompt <h2 id="18cnvm_1827fhc_cnvhGtdG">
 set termout on
@@ -950,7 +967,7 @@ order by fus.name;
 set markup html off
 prompt <h2 id="hasy16e9fmhahsuhydh973rka927ehdjabmgpaj72">
 set termout on
-prompt * Daylight savings time zone (DST)
+prompt * Daylight savings time zone (DST) timezone version
 set termout off
 prompt </h2>
 set markup html on
